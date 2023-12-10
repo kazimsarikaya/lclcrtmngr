@@ -10,6 +10,7 @@ if [ "x$cmd" == "xbuild" ]; then
   go mod vendor
  
   go build -ldflags "${LDFLAGS} -X main.version=$REV -X main.buildTime=$NOW -X 'main.goVersion=${GOV}'"  -o ./bin/lclcrtmngr ./cmd
+  go build -ldflags "${LDFLAGS} -X main.version=$REV -X main.buildTime=$NOW -X 'main.goVersion=${GOV}'"  -o ./bin/examplesrv ./example
 elif [ "x$cmd" == "xtest" ]; then
   shift
   ./test.sh $@
