@@ -89,7 +89,19 @@ type certificateWatcher struct {
 }
 
 func NewCertificateWatcher(certManagerUrl, caFile string, domains []string) CertificateWatcher {
-	return &certificateWatcher{certManagerUrl: certManagerUrl, caFile: caFile, domains: domains}
+
+	// remove duplicates on ip addresses
+	seen := make(map[string]bool)
+	uniqDomains := make([]string, 0)
+
+	for _, domain := range domains {
+		if _, ok := seen[domain]; !ok {
+			seen[domain] = true
+			uniqDomains = append(uniqDomains, domain)
+		}
+	}
+
+	return &certificateWatcher{certManagerUrl: certManagerUrl, caFile: caFile, domains: uniqDomains}
 }
 
 func (cw *certificateWatcher) Start() error {
