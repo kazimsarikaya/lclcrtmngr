@@ -234,10 +234,20 @@ func (cw *certificateWatcher) getCertificateFromCertManager(certManagerUrl, caPa
 		panic(err)
 	}
 
-	if caCertPEM, err := ioutil.ReadFile(cw.caFile); err != nil {
+	caCertPEM, err := ioutil.ReadFile(caPath)
+
+	if err != nil {
 		panic(err)
 	} else if ok := certPool.AppendCertsFromPEM(caCertPEM); !ok {
 		panic("invalid cert in CA PEM")
+	}
+
+	caCertBlock, _ := pem.Decode(caCertPEM)
+
+	caCert, err := x509.ParseCertificate(caCertBlock.Bytes)
+
+	if err != nil {
+		panic(err)
 	}
 
 	tlsConfig := &tls.Config{
@@ -276,6 +286,8 @@ func (cw *certificateWatcher) getCertificateFromCertManager(certManagerUrl, caPa
 		return nil, err
 	}
 
+	fmt.Printf("Certificate response obtained %s\n", certData)
+
 	certBlock, _ := pem.Decode(certData)
 
 	cert, err := x509.ParseCertificate(certBlock.Bytes)
@@ -291,7 +303,7 @@ func (cw *certificateWatcher) getCertificateFromCertManager(certManagerUrl, caPa
 	// return tls certificate
 
 	tlsCert := tls.Certificate{
-		Certificate: [][]byte{cert.Raw},
+		Certificate: [][]byte{cert.Raw, caCert.Raw},
 		PrivateKey:  cw.privateKey,
 	}
 
